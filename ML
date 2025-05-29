@@ -1,0 +1,58 @@
+from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.linear_model import LinearRegression, LogisticRegression
+from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
+from sklearn.metrics import mean_squared_error, r2_score, classification_report, confusion_matrix
+from sklearn.preprocessing import LabelEncoder
+import numpy as np
+
+df_trend = pd.read_csv("multiTimeline-1.csv", skiprows=1)
+df_trend.rename(columns={df_trend.columns[0]: "date"}, inplace=True)
+df_trend["date"] = pd.to_datetime(df_trend["date"])
+category_col = df_trend.columns[1]
+
+df_merge = pd.merge(df_weekly, df_trend[["date", category_col]], left_on="Time_of_Purchase", right_on="date", how="inner")
+
+X = df_merge[[category_col]]  # Google Trends
+y_freq = df_merge["Frequency_of_Purchase"]
+y_satis = df_merge["Customer_Satisfaction"]
+
+X_train, X_test, y_train, y_test = train_test_split(X, y_freq, test_size=0.2, random_state=42)
+
+reg_model = RandomForestRegressor(random_state=42)
+reg_model.fit(X_train, y_train)
+
+y_pred = reg_model.predict(X_test)
+
+print("Regression Results (Frequency of Purchase):")
+print(f"R² Score: {r2_score(y_test, y_pred):.3f}")
+print(f"MSE: {mean_squared_error(y_test, y_pred):.3f}")
+
+X_train, X_test, y_train, y_test = train_test_split(X, y_satis, test_size=0.2, random_state=42)
+
+reg_model.fit(X_train, y_train)
+y_pred = reg_model.predict(X_test)
+
+print("Regression Results (Customer Satisfaction):")
+print(f"R² Score: {r2_score(y_test, y_pred):.3f}")
+print(f"MSE: {mean_squared_error(y_test, y_pred):.3f}")
+df_merge["Satisfaction_Level"] = pd.cut(df_merge["Customer_Satisfaction"],
+                                        bins=[0, 4, 7, 10],
+                                        labels=["Low", "Medium", "High"])
+
+le = LabelEncoder()
+df_merge["Satisfaction_Label"] = le.fit_transform(df_merge["Satisfaction_Level"])
+
+X = df_merge[[category_col]]
+y = df_merge["Satisfaction_Label"]
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+clf_model = RandomForestClassifier(random_state=42)
+clf_model.fit(X_train, y_train)
+
+y_pred = clf_model.predict(X_test)
+
+print("Classification Report (Customer Satisfaction):")
+print(classification_report(y_test, y_pred, target_names=le.classes_))
+print("Confusion Matrix:")
+print(confusion_matrix(y_test, y_pred))
