@@ -25,7 +25,6 @@ This project aims to analyze comprehensive consumer behavior data to uncover key
 - **Alternative Hypothesis (H1)**: There is a significant relationship between Google Trends search volume for product categories and consumer purchase amounts.  
   *(ρ ≠ 0)*
   
-# Final Report of Comprehensive Consumer Behavior Analysis Enriched by Google Trends
 
 ## Motivation
 The primary motivation behind this project was to explore the relationship between online search behavior, represented by Google Trends data, and actual consumer purchase behavior. Understanding these relationships could potentially enable businesses to better predict consumer actions and enhance customer satisfaction through targeted strategies.
